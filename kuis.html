@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Fun Kids Interactive Quiz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: linear-gradient(135deg, #ffd194, #d1913c);
+    font-family: 'Comic Neue', cursive, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    padding: 10px;
+  }
+  #quiz-container {
+    background: #fff8dc;
+    border-radius: 20px;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+    width: 100%;
+    max-width: 380px;
+    max-height: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  h1 {
+    color: #d9644a;
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px #fddbaf;
+  }
+  #question-number {
+    color: #a34933;
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 12px;
+    font-weight: bold;
+  }
+  #media-container {
+    width: 100%;
+    max-height: 200px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #eee;
+    box-shadow: inset 0 0 8px #f5bb64;
+    position: relative;
+  }
+  #media-container img,
+  #media-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+  }
+  #question-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #6f2c14;
+    text-align: center;
+    min-height: 60px;
+    padding: 0 8px;
+    animation: fadeInText 0.6s ease forwards;
+  }
+  @keyframes fadeInText {
+    from {opacity: 0; transform: translateY(15px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+  #answers {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  button.answer-btn {
+    background: #f7a145;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px #c46232;
+    transition: background 0.3s ease, transform 0.15s ease;
+  }
+  button.answer-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 3px #c46232;
+  }
+  button.answer-btn:hover {
+    background: #e67c2b;
+  }
+  button.answer-btn.correct {
+    background: #4caf50;
+    box-shadow: 0 6px #397d31;
+  }
+  button.answer-btn.incorrect {
+    background: #e74c3c;
+    box-shadow: 0 6px #a32b21;
+  }
+  #next-btn {
+    margin-top: auto;
+    background: #3498db;
+    border-radius: 12px;
+    border: none;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 14px;
+    cursor: pointer;
+    box-shadow: 0 6px #21618c;
+    transition: background 0.3s ease, transform 0.15s ease;
+    display: none;
+    user-select: none;
+  }
+  #next-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 3px #21618c;
+  }
+  #next-btn:hover {
+    background: #2874a6;
+  }
+  #result-container {
+    text-align: center;
+    padding: 20px;
+    color: #6f2c14;
+    font-weight: 700;
+    font-size: 1.5rem;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #score {
+    font-size: 2.4rem;
+    color: #d9644a;
+    margin-top: 15px;
+    animation: popIn 0.8s ease forwards;
+  }
+  @keyframes popIn {
+    0% {transform: scale(0);}
+    80% {transform: scale(1.2);}
+    100% {transform: scale(1);}
+  }
+  #restart-btn {
+    margin-top: 20px;
+    background: #f39c12;
+    border: none;
+    border-radius: 16px;
+    padding: 14px 25px;
+    font-weight: 700;
+    color: white;
+    font-size: 1.25rem;
+    cursor: pointer;
+    box-shadow: 0 6px #b06e0a;
+    transition: background 0.3s ease, transform 0.15s ease;
+  }
+  #restart-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 3px #b06e0a;
+  }
+  #restart-btn:hover {
+    background: #d5850b;
+  }
+
+  /* Mobile friendly */
+  @media (max-width: 400px) {
+    h1 { font-size: 1.5rem; }
+    #question-text { font-size: 1.1rem; }
+    button.answer-btn {
+      font-size: 0.95rem;
+      padding: 10px 12px;
+    }
+    #next-btn, #restart-btn {
+      font-size: 1rem;
+      padding: 12px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="quiz-container" role="main" aria-live="polite">
+  <h1>Quiz Seru Anak-anak</h1>
+  <div id="question-number">Pertanyaan 1 dari 4</div>
+  <div id="media-container" aria-label="Konten soal multimedia">
+    <!-- Image or Video inserted here -->
+    <img src="" alt="" id="media-image" style="display:none;" />
+    <video id="media-video" controls muted playsinline style="display:none;"></video>
+  </div>
+  <div id="question-text">Loading question...</div>
+  <div id="answers" role="list"></div>
+  <button id="next-btn" aria-label="Tombol untuk melanjutkan ke pertanyaan berikutnya">Berikutnya</button>
+
+  <div id="result-container" aria-live="polite" role="region" aria-label="Hasil kuis">
+    <div>Selamat! Kamu sudah menyelesaikan kuis.</div>
+    <div id="score"></div>
+    <button id="restart-btn">Main Lagi</button>
+  </div>
+</div>
+
+<script>
+  const quizData = [
+    {
+      question: "Apa nama hewan ini?",
+      media: {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1558788353-f76d92427f16?auto=format&fit=crop&w=400&q=80",
+        alt: "Seekor singa sedang berdiri"
+      },
+      answers: [
+        "Singa",
+        "Gajah",
+        "Harimau",
+        "Zebra"
+      ],
+      correct: 0
+    },
+    {
+      question: "Apa suara hewan ini?",
+      media: {
+        type: "video",
+        src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
+      },
+      answers: [
+        "Mekar bunga",
+        "Suara burung",
+        "Suara air",
+        "Suara musik"
+      ],
+      correct: 0
+    },
+    {
+      question: "Dimanakah lokasi menara ini?",
+      media: {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+        alt: "Menara Eiffel di Paris"
+      },
+      answers: [
+        "Paris",
+        "London",
+        "New York",
+        "Roma"
+      ],
+      correct: 0
+    },
+    {
+      question: "Apa warna langit saat cerah?",
+      media: {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=400&q=80",
+        alt: "Langit biru terang saat siang hari"
+      },
+      answers: [
+        "Biru",
+        "Merah",
+        "Hitam",
+        "Hijau"
+      ],
+      correct: 0
+    }
+  ];
+
+  const container = document.getElementById('quiz-container');
+  const questionNumberEl = document.getElementById('question-number');
+  const questionTextEl = document.getElementById('question-text');
+  const answersContainer = document.getElementById('answers');
+  const mediaContainer = document.getElementById('media-container');
+  const mediaImage = document.getElementById('media-image');
+  const mediaVideo = document.getElementById('media-video');
+  const nextBtn = document.getElementById('next-btn');
+  const resultContainer = document.getElementById('result-container');
+  const scoreEl = document.getElementById('score');
+  const restartBtn = document.getElementById('restart-btn');
+
+  let currentQuestionIndex = 0;
+  let score = 0;
+  let answered = false;
+
+  function animateFadeOut(element, callback) {
+    element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    element.style.opacity = 0;
+    element.style.transform = 'translateY(-15px)';
+    setTimeout(() => {
+      callback();
+      element.style.opacity = 1;
+      element.style.transform = 'translateY(0)';
+    }, 500);
+  }
+
+  function showQuestion() {
+    answered = false;
+    nextBtn.style.display = 'none';
+    answersContainer.innerHTML = '';
+
+    const q = quizData[currentQuestionIndex];
+    questionNumberEl.textContent = `Pertanyaan ${currentQuestionIndex + 1} dari ${quizData.length}`;
+
+    animateFadeOut(questionTextEl, () => {
+      questionTextEl.textContent = q.question;
+    });
+
+    // Show media (image or video)
+    if(q.media.type === "image") {
+      mediaVideo.style.display = 'none';
+      mediaVideo.pause();
+      mediaVideo.currentTime = 0;
+      mediaImage.style.display = 'block';
+      mediaImage.src = q.media.src;
+      mediaImage.alt = q.media.alt || 'Gambar soal';
+    } else if (q.media.type === "video") {
+      mediaImage.style.display = 'none';
+      mediaImage.src = '';
+      mediaVideo.style.display = 'block';
+      mediaVideo.src = q.media.src;
+      mediaVideo.setAttribute('aria-label', 'Video soal');
+      mediaVideo.load();
+      mediaVideo.play().catch(() => {}); // autoplay attempt - may need user interaction on mobile
+    }
+
+    q.answers.forEach((answer, idx) => {
+      const btn = document.createElement('button');
+      btn.classList.add('answer-btn');
+      btn.textContent = answer;
+      btn.setAttribute('role', 'listitem');
+      btn.disabled = false;
+      btn.addEventListener('click', () => selectAnswer(idx, btn));
+      answersContainer.appendChild(btn);
+    });
+  }
+
+  function selectAnswer(selectedIndex, button) {
+    if (answered) return;
+    answered = true;
+
+    const correctIndex = quizData[currentQuestionIndex].correct;
+    const buttons = answersContainer.querySelectorAll('button');
+    buttons.forEach((btn, idx) => {
+      btn.disabled = true;
+      btn.classList.remove('correct', 'incorrect');
+      if (idx === correctIndex) {
+        btn.classList.add('correct');
+      }
+    });
+
+    if(selectedIndex === correctIndex) {
+      score++;
+      button.classList.add('correct');
+    } else {
+      button.classList.add('incorrect');
+    }
+
+    nextBtn.style.display = 'block';
+    nextBtn.focus();
+  }
+
+  nextBtn.addEventListener('click', () => {
+    currentQuestionIndex++;
+    if(currentQuestionIndex < quizData.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  });
+
+  restartBtn.addEventListener('click', () => {
+    currentQuestionIndex = 0;
+    score = 0;
+    resultContainer.style.display = 'none';
+    questionNumberEl.style.display = 'block';
+    questionTextEl.style.display = 'block';
+    mediaContainer.style.display = 'block';
+    answersContainer.style.display = 'flex';
+    nextBtn.style.display = 'none';
+    showQuestion();
+  });
+
+  function showResult() {
+    questionNumberEl.style.display = 'none';
+    questionTextEl.style.display = 'none';
+    mediaContainer.style.display = 'none';
+    answersContainer.style.display = 'none';
+    nextBtn.style.display = 'none';
+
+    resultContainer.style.display = 'flex';
+    scoreEl.textContent = `Skor kamu: ${score} / ${quizData.length}! 🎉🎉🎉`;
+    restartBtn.focus();
+  }
+
+  // Initial call
+  showQuestion();
+
+</script>
+</body>
+</html>
+
